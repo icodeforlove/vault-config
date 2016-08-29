@@ -1,6 +1,8 @@
 # vault-config
 
-a [node-config](https://github.com/lorenwest/node-config) inspired config that is backed by hashicorp vault that is backed by [vault-get](https://github.com/icodeforlove/vault-get) data interface
+an insanely simple way to back your apps config by vault
+
+[node-config](https://github.com/lorenwest/node-config) inspired config that is backed by hashicorp vault that is backed by [vault-get](https://github.com/icodeforlove/vault-get) data interface
 
 ## install
 
