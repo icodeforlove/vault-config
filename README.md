@@ -1,6 +1,6 @@
 # vault-config
 
-an insanely simple way to back your apps config by vault
+an insanely simple way to back your apps config by vault, and make it committable
 
 [node-config](https://github.com/lorenwest/node-config) inspired config that is backed by hashicorp vault that is backed by [vault-get](https://github.com/icodeforlove/vault-get) data interface
 
@@ -12,18 +12,13 @@ npm install vault-config
 
 ## usage
 
-setup your .vaultrc
+setup your `.vaultrc` (you can commit this to your repo)
 
 ```javascript
 {
-	"config": {
-		"endpoint": "...", // or VAULT_CONFIG_ENDPOINT (required)
-		"token": "...", // or VAULT_CONFIG_TOKEN (required)
-		"key": "...", // or VAULT_CONFIG_KEY (optional)
-		"keys": ["...","...","..."], // or VAULT_CONFIG_KEYS (optional)
-		"rootPath": "...", // or VAULT_CONFIG_ROOT_PATH (default "secret")
-		"secretShares": "..." // or VAULT_CONFIG_SECRET_SHARES (default 1)
-	},
+	"VAULT_CONFIG_ENDPOINT": "...", // or use env var (required)
+	"VAULT_CONFIG_ROOT_PATH": "...", // or use env var (default "secret")
+	"VAULT_CONFIG_SECRET_SHARES": "...", // or use env var (default 1)
 
 	"NODE_ENV=.*": { // default config (every other match extends this)
 		"vault": { // vault-get interface
@@ -53,6 +48,16 @@ setup your .vaultrc
 			}
 		}
 	}
+}
+```
+
+setup your .vaultsecrets (do not commit to repo)
+
+```javascript
+{
+	"VAULT_CONFIG_TOKEN": "...", // or use env var (required)
+	"VAULT_CONFIG_KEYS": ["...", "..."], // or use env var (optional)
+	"VAULT_CONFIG_KEY": "..." // or use env var (optional)
 }
 ```
 
@@ -91,8 +96,9 @@ which would log out the following
 }
 ```
 
-You can also specify the location of the `.vaultrc` via env variables
+You can also specify the location of the `.vaultrc` / `.vaultsecret` files via env variables
 
 ```
 VAULT_CONFIG_RCPATH=/path/to/.vaultrc
+VAULT_CONFIG_SECRETSPATH=/path/to/.vaultsecret
 ```

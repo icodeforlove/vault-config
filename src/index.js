@@ -5,14 +5,22 @@ import __rootdirname from 'app-root-path';
 import extend from 'deep-extend';
 
 const VAULT_CONFIG_RCPATH = process.env.VAULT_CONFIG_RCPATH || `${__rootdirname}/.vaultrc`;
+const VAULT_CONFIG_SECRETSPATH = process.env.VAULT_CONFIG_SECRETSPATH || `${__rootdirname}/.vaultsecrets`;
 
 async function loadConfigAsync () {
-	let vaultrc;
+	let vaultrc,
+		vaultsecrets;
 
 	try {
 		vaultrc = JSON.parse(await fs.readFile(VAULT_CONFIG_RCPATH, 'utf8'));
 	} catch (error) {
 		throw new Error(`vault-config: cant find "${VAULT_CONFIG_RCPATH}", or invalid json\n${error.stack}`);
+	}
+
+	try {
+		vaultsecrets = JSON.parse(await fs.readFile(VAULT_CONFIG_SECRETSPATH, 'utf8'));
+	} catch (error) {
+		vaultsecrets = {};
 	}
 
 	// merge configs
@@ -42,47 +50,33 @@ async function loadConfigAsync () {
 		return {};
 	}
 
-	vaultrc.config = vaultrc.config || {};
-
-	if (!vaultrc.config.endpoint && process.env.VAULT_CONFIG_ENDPOINT) {
-		vaultrc.config.endpoint = process.env.VAULT_CONFIG_ENDPOINT;
+	let settings = {};
+	settings.VAULT_CONFIG_TOKEN = process.env.VAULT_CONFIG_TOKEN || vaultsecrets.VAULT_CONFIG_TOKEN;
+	settings.VAULT_CONFIG_KEY = process.env.VAULT_CONFIG_KEY || vaultsecrets.VAULT_CONFIG_KEY;
+	if (process.env.VAULT_CONFIG_KEYS) {
+		settings.VAULT_CONFIG_KEYS = process.env.VAULT_CONFIG_KEYS.split(',');
+	} else {
+		settings.VAULT_CONFIG_KEYS = vaultsecrets.VAULT_CONFIG_KEYS;
 	}
+	settings.VAULT_CONFIG_ENDPOINT = vaultrc.VAULT_CONFIG_ENDPOINT || process.env.VAULT_CONFIG_ENDPOINT;
+	settings.VAULT_CONFIG_ROOTPATH = vaultrc.VAULT_CONFIG_ROOTPATH || process.env.VAULT_CONFIG_ROOTPATH;
+	settings.VAULT_CONFIG_SECRET_SHARES = vaultrc.VAULT_CONFIG_SECRET_SHARES || process.env.VAULT_CONFIG_SECRET_SHARES;
 
-	if (!vaultrc.config.token && process.env.VAULT_CONFIG_TOKEN) {
-		vaultrc.config.token = process.env.VAULT_CONFIG_TOKEN;
-	}
-
-	if (!vaultrc.config.key && process.env.VAULT_CONFIG_KEY) {
-		vaultrc.config.key = process.env.VAULT_CONFIG_KEY;
-	}
-
-	if (!vaultrc.config.keys && process.env.VAULT_CONFIG_KEYS) {
-		vaultrc.config.keys = process.env.VAULT_CONFIG_KEYS.split(',');
-	}
-
-	if (!vaultrc.config.rootPath && process.env.VAULT_CONFIG_ROOTPATH) {
-		vaultrc.config.rootPath = process.env.VAULT_CONFIG_ROOTPATH;
-	}
-
-	if (!vaultrc.config.secretShares && process.env.VAULT_CONFIG_SECRET_SHARES) {
-		vaultrc.config.secretShares = process.env.VAULT_CONFIG_SECRET_SHARES;
-	}
-
-	if (!vaultrc.config.endpoint) {
+	if (!settings.VAULT_CONFIG_ENDPOINT) {
 		throw new Error('vault-config: missing "endpoint" in .vaultrc, or env var');
 	}
 
-	if (!vaultrc.config.token) {
+	if (!settings.VAULT_CONFIG_TOKEN) {
 		throw new Error('vault-config: missing "token" in .vaultrc, or env var');
 	}
 
 	let vault = Vault({
-		endpoint: vaultrc.config.endpoint,
-		token: vaultrc.config.token,
-		keys: vaultrc.config.keys,
-		key: vaultrc.config.key,
-		rootPath: vaultrc.config.rootPath,
-		secretShares: vaultrc.config.secretShares
+		endpoint: settings.VAULT_CONFIG_ENDPOINT,
+		token: settings.VAULT_CONFIG_TOKEN,
+		keys: settings.VAULT_CONFIG_KEYS,
+		key: settings.VAULT_CONFIG_KEY,
+		rootPath: settings.VAULT_CONFIG_ROOTPATH,
+		secretShares: settings.VAULT_CONFIG_SECRET_SHARES
 	});
 
 	try {

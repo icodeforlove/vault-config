@@ -1,6 +1,6 @@
 {
   "name": "vault-config",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "an insanely simple way to back your apps config by vault",
   "main": "dist/index.js",
   "scripts": {
