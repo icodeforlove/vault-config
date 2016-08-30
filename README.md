@@ -6,7 +6,7 @@ an insanely simple way to back your apps config by vault
 
 ## install
 
-```
+```bash
 npm install vault-config
 ```
 
@@ -14,7 +14,7 @@ npm install vault-config
 
 setup your .vaultrc
 
-```
+```javascript
 {
 	"config": {
 		"endpoint": "...", // or VAULT_CONFIG_ENDPOINT (required)
@@ -24,11 +24,33 @@ setup your .vaultrc
 		"rootPath": "...", // or VAULT_CONFIG_ROOT_PATH (default "secret")
 		"secretShares": "..." // or VAULT_CONFIG_SECRET_SHARES (default 1)
 	},
-	"data": { // vault-get interface
-		"database": {
-			"host": "website.com/databases/mysql/master/host",
-			"username": "website.com/databases/mysql/master/username",
-			"password": "website.com/databases/mysql/master/password"
+
+	"NODE_ENV=.*": { // default config (every other match extends this)
+		"vault": { // vault-get interface
+			"database": {
+				"host": "website.com/databases/mysql/master/host",
+				"username": "website.com/databases/mysql/master/username",
+				"password": "website.com/databases/mysql/master/password"
+			}
+		}
+	},
+
+	"NODE_ENV=development": {
+		"local": { // local temp overrides
+			"database": {
+				"host": "localhost",
+				"username": "root",
+				"password": ""
+			}
+		}
+	},
+
+	"NODE_ENV=production": {
+		"vault": { // vault-get interface
+			"gmail": {
+				"username": "prod.website.com/accounts/gmail/username",
+				"password": "prod.website.com/accounts/gmail/password"
+			}
 		}
 	}
 }
@@ -37,9 +59,40 @@ setup your .vaultrc
 if everything is correct you should be able to do the following
 
 ```
+// blocks on first module load if vault keys are requested
 import config from 'vault-config';
 
 console.log(config);
 ```
 
-happy vaulting
+which would log out the following
+
+```javascript
+// in development
+{
+	database: {
+		host: 'localhost',
+		username: 'root',
+		password: ''
+	}
+}
+
+// in production
+{
+	database: {
+		host: 'VAULE OBTAINED FROM VAULT',
+		username: 'VAULE OBTAINED FROM VAULT',
+		password: 'VAULE OBTAINED FROM VAULT'
+	},
+	gmail: {
+		username: 'VAULE OBTAINED FROM VAULT',
+		password: 'VAULE OBTAINED FROM VAULT'
+	}
+}
+```
+
+You can also specify the location of the `.vaultrc` via env variables
+
+```
+VAULT_CONFIG_RCPATH=/path/to/.vaultrc
+```
