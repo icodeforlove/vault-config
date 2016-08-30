@@ -58,7 +58,7 @@ setup your .vaultrc
 
 if everything is correct you should be able to do the following
 
-```
+```javascript
 // blocks on first module load if vault keys are requested
 import config from 'vault-config';
 
