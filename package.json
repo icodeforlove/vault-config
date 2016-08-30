@@ -21,7 +21,7 @@
     "deasync": "^0.1.7",
     "deep-extend": "^0.4.1",
     "fs-promise": "^0.5.0",
-    "vault-get": "0.0.5"
+    "vault-get": "0.0.6"
   },
   "devDependencies": {
     "babel": "^6.5.2",

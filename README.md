@@ -102,3 +102,9 @@ You can also specify the location of the `.vaultrc` / `.vaultsecret` files via e
 VAULT_CONFIG_RCPATH=/path/to/.vaultrc
 VAULT_CONFIG_SECRETSPATH=/path/to/.vaultsecret
 ```
+
+## debugging
+
+```javascript
+DEBUG=vault ...
+```
