@@ -51,7 +51,7 @@ setup your `.vaultrc` (you can commit this to your repo)
 }
 ```
 
-setup your .vaultsecrets (do not commit to repo)
+setup your `.vaultsecrets` (do not commit to repo)
 
 ```javascript
 {
