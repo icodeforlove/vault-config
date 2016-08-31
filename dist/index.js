@@ -25,40 +25,65 @@ var loadConfigAsync = function () {
 					case 0:
 						vaultrc = void 0, vaultsecrets = void 0;
 						_context.prev = 1;
-						_context.t0 = JSON;
-						_context.next = 5;
+						_context.next = 4;
 						return _fsPromise2.default.readFile(VAULT_CONFIG_RCPATH, 'utf8');
 
-					case 5:
-						_context.t1 = _context.sent;
-						vaultrc = _context.t0.parse.call(_context.t0, _context.t1);
-						_context.next = 12;
+					case 4:
+						vaultrc = _context.sent;
+						_context.next = 10;
 						break;
 
-					case 9:
-						_context.prev = 9;
-						_context.t2 = _context['catch'](1);
-						throw new Error('vault-config: cant find "' + VAULT_CONFIG_RCPATH + '", or invalid json\n' + _context.t2.stack);
+					case 7:
+						_context.prev = 7;
+						_context.t0 = _context['catch'](1);
+						throw new Error('vault-config: can\'t find "' + VAULT_CONFIG_RCPATH + '"\n' + _context.t0.stack);
 
-					case 12:
-						_context.prev = 12;
-						_context.t3 = JSON;
-						_context.next = 16;
+					case 10:
+						_context.prev = 10;
+
+						vaultrc = JSON.parse(vaultrc);
+						_context.next = 17;
+						break;
+
+					case 14:
+						_context.prev = 14;
+						_context.t1 = _context['catch'](10);
+						throw new Error('vault-config: can\'t parse JSON in "' + VAULT_CONFIG_RCPATH + '"\n' + _context.t1.stack);
+
+					case 17:
+						_context.prev = 17;
+						_context.next = 20;
 						return _fsPromise2.default.readFile(VAULT_CONFIG_SECRETSPATH, 'utf8');
 
-					case 16:
-						_context.t4 = _context.sent;
-						vaultsecrets = _context.t3.parse.call(_context.t3, _context.t4);
-						_context.next = 23;
+					case 20:
+						vaultsecrets = _context.sent;
+						_context.next = 26;
 						break;
 
-					case 20:
-						_context.prev = 20;
-						_context.t5 = _context['catch'](12);
+					case 23:
+						_context.prev = 23;
+						_context.t2 = _context['catch'](17);
 
 						vaultsecrets = {};
 
-					case 23:
+					case 26:
+						if (!(typeof vaultsecrets === 'string')) {
+							_context.next = 34;
+							break;
+						}
+
+						_context.prev = 27;
+
+						vaultsecrets = JSON.parse(vaultsecrets);
+						_context.next = 34;
+						break;
+
+					case 31:
+						_context.prev = 31;
+						_context.t3 = _context['catch'](27);
+						throw new Error('vault-config: can\'t parse JSON in "' + VAULT_CONFIG_SECRETSPATH + '"\n' + _context.t3.stack);
+
+					case 34:
 
 						// merge configs
 						configs = (0, _keys2.default)(vaultrc).map(function (key) {
@@ -75,7 +100,7 @@ var loadConfigAsync = function () {
 						});
 
 						if (!configs.length) {
-							_context.next = 32;
+							_context.next = 43;
 							break;
 						}
 
@@ -86,20 +111,20 @@ var loadConfigAsync = function () {
 						// break out early, we have no matching vault rules
 
 						if ((0, _keys2.default)(configs.vault).length) {
-							_context.next = 30;
+							_context.next = 41;
 							break;
 						}
 
 						return _context.abrupt('return', configs.local);
 
-					case 30:
-						_context.next = 33;
+					case 41:
+						_context.next = 44;
 						break;
 
-					case 32:
+					case 43:
 						return _context.abrupt('return', {});
 
-					case 33:
+					case 44:
 						settings = {};
 
 						settings.VAULT_CONFIG_TOKEN = process.env.VAULT_CONFIG_TOKEN || vaultsecrets.VAULT_CONFIG_TOKEN;
@@ -114,21 +139,21 @@ var loadConfigAsync = function () {
 						settings.VAULT_CONFIG_SECRET_SHARES = vaultrc.VAULT_CONFIG_SECRET_SHARES || process.env.VAULT_CONFIG_SECRET_SHARES;
 
 						if (settings.VAULT_CONFIG_ENDPOINT) {
-							_context.next = 42;
+							_context.next = 53;
 							break;
 						}
 
-						throw new Error('vault-config: missing "endpoint" in .vaultrc, or env var');
+						throw new Error('vault-config: missing "VAULT_CONFIG_ENDPOINT"');
 
-					case 42:
+					case 53:
 						if (settings.VAULT_CONFIG_TOKEN) {
-							_context.next = 44;
+							_context.next = 55;
 							break;
 						}
 
-						throw new Error('vault-config: missing "token" in .vaultrc, or env var');
+						throw new Error('vault-config: missing "VAULT_CONFIG_TOKEN"');
 
-					case 44:
+					case 55:
 						vault = (0, _vaultGet2.default)({
 							endpoint: settings.VAULT_CONFIG_ENDPOINT,
 							token: settings.VAULT_CONFIG_TOKEN,
@@ -137,31 +162,31 @@ var loadConfigAsync = function () {
 							rootPath: settings.VAULT_CONFIG_ROOTPATH,
 							secretShares: settings.VAULT_CONFIG_SECRET_SHARES
 						});
-						_context.prev = 45;
-						_context.next = 48;
+						_context.prev = 56;
+						_context.next = 59;
 						return vault.get(configs.vault);
 
-					case 48:
+					case 59:
 						configs.vault = _context.sent;
-						_context.next = 55;
+						_context.next = 66;
 						break;
 
-					case 51:
-						_context.prev = 51;
-						_context.t6 = _context['catch'](45);
+					case 62:
+						_context.prev = 62;
+						_context.t4 = _context['catch'](56);
 
-						_context.t6.message = 'vault-config: \n' + _context.t6.message;
-						throw _context.t6;
+						_context.t4.message = 'vault-config: \n' + _context.t4.message;
+						throw _context.t4;
 
-					case 55:
+					case 66:
 						return _context.abrupt('return', (0, _deepExtend2.default)(configs.vault, configs.local));
 
-					case 56:
+					case 67:
 					case 'end':
 						return _context.stop();
 				}
 			}
-		}, _callee, this, [[1, 9], [12, 20], [45, 51]]);
+		}, _callee, this, [[1, 7], [10, 14], [17, 23], [27, 31], [56, 62]]);
 	}));
 
 	return function loadConfigAsync() {

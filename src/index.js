@@ -11,16 +11,30 @@ async function loadConfigAsync () {
 	let vaultrc,
 		vaultsecrets;
 
+
 	try {
-		vaultrc = JSON.parse(await fs.readFile(VAULT_CONFIG_RCPATH, 'utf8'));
+		vaultrc = await fs.readFile(VAULT_CONFIG_RCPATH, 'utf8');
 	} catch (error) {
-		throw new Error(`vault-config: cant find "${VAULT_CONFIG_RCPATH}", or invalid json\n${error.stack}`);
+		throw new Error(`vault-config: can't find "${VAULT_CONFIG_RCPATH}"\n${error.stack}`);
 	}
 
 	try {
-		vaultsecrets = JSON.parse(await fs.readFile(VAULT_CONFIG_SECRETSPATH, 'utf8'));
+		vaultrc = JSON.parse(vaultrc);
+	} catch (error) {
+		throw new Error(`vault-config: can't parse JSON in "${VAULT_CONFIG_RCPATH}"\n${error.stack}`);
+	}
+
+	try {
+		vaultsecrets = await fs.readFile(VAULT_CONFIG_SECRETSPATH, 'utf8');
 	} catch (error) {
 		vaultsecrets = {};
+	}
+	if (typeof vaultsecrets === 'string') {
+		try {
+			vaultsecrets = JSON.parse(vaultsecrets);
+		} catch (error) {
+			throw new Error(`vault-config: can't parse JSON in "${VAULT_CONFIG_SECRETSPATH}"\n${error.stack}`);
+		}
 	}
 
 	// merge configs
@@ -63,11 +77,11 @@ async function loadConfigAsync () {
 	settings.VAULT_CONFIG_SECRET_SHARES = vaultrc.VAULT_CONFIG_SECRET_SHARES || process.env.VAULT_CONFIG_SECRET_SHARES;
 
 	if (!settings.VAULT_CONFIG_ENDPOINT) {
-		throw new Error('vault-config: missing "endpoint" in .vaultrc, or env var');
+		throw new Error('vault-config: missing "VAULT_CONFIG_ENDPOINT"');
 	}
 
 	if (!settings.VAULT_CONFIG_TOKEN) {
-		throw new Error('vault-config: missing "token" in .vaultrc, or env var');
+		throw new Error('vault-config: missing "VAULT_CONFIG_TOKEN"');
 	}
 
 	let vault = Vault({
