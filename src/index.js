@@ -35,8 +35,6 @@ async function loadConfigAsync () {
 		}
 	}
 
-	console.log(JSON.stringify(vaultrc, null, '\t'));
-
 	try {
 		vaultsecrets = await fs.readFile(VAULT_CONFIG_SECRETSPATH, 'utf8');
 	} catch (error) {
