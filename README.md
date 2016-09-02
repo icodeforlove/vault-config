@@ -105,6 +105,10 @@ VAULT_CONFIG_RCPATH=/path/to/.vaultrc
 VAULT_CONFIG_SECRETSPATH=/path/to/.vaultsecret
 ```
 
+## localoverrides
+
+you can create a `.vaultlocalrc` next to your `.vaultrc` and it will merge into `.vaultrc` (a `.vaultlocalrc` is not intended to be commited)
+
 ## debugging
 
 ```javascript

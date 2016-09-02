@@ -9,20 +9,33 @@ const VAULT_CONFIG_SECRETSPATH = process.env.VAULT_CONFIG_SECRETSPATH || `${__ro
 
 async function loadConfigAsync () {
 	let vaultrc,
+		vaultlocalrc,
 		vaultsecrets;
-
 
 	try {
 		vaultrc = await fs.readFile(VAULT_CONFIG_RCPATH, 'utf8');
 	} catch (error) {
 		throw new Error(`vault-config: can't find "${VAULT_CONFIG_RCPATH}"\n${error.stack}`);
 	}
-
 	try {
 		vaultrc = JSON.parse(vaultrc);
 	} catch (error) {
 		throw new Error(`vault-config: can't parse JSON in "${VAULT_CONFIG_RCPATH}"\n${error.stack}`);
 	}
+
+	try {
+		vaultlocalrc = await fs.readFile(`${__rootdirname}/.vaultlocalrc`, 'utf8');
+	} catch (error) {}
+	if (vaultlocalrc) {
+		try {
+			vaultlocalrc = JSON.parse(vaultlocalrc);
+			vaultrc = extend(vaultrc, vaultlocalrc);
+		} catch (error) {
+			throw new Error(`vault-config: can't parse JSON in "${__rootdirname}/.vaultlocalrc"\n${error.stack}`);
+		}
+	}
+
+	console.log(JSON.stringify(vaultrc, null, '\t'));
 
 	try {
 		vaultsecrets = await fs.readFile(VAULT_CONFIG_SECRETSPATH, 'utf8');
