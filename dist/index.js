@@ -4,10 +4,22 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
+var _regenerator = require('babel-runtime/regenerator');
+
+var _regenerator2 = _interopRequireDefault(_regenerator);
+
+var _keys = require('babel-runtime/core-js/object/keys');
+
+var _keys2 = _interopRequireDefault(_keys);
+
+var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
+
+var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
+
 var loadConfigAsync = function () {
-	var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
+	var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee() {
 		var vaultrc, vaultlocalrc, vaultsecrets, configs, settings, vault;
-		return regeneratorRuntime.wrap(function _callee$(_context) {
+		return _regenerator2.default.wrap(function _callee$(_context) {
 			while (1) {
 				switch (_context.prev = _context.next) {
 					case 0:
@@ -71,45 +83,42 @@ var loadConfigAsync = function () {
 						throw new Error('vault-config: can\'t parse JSON in "' + _appRootPath2.default + '/.vaultlocalrc"\n' + _context.t3.stack);
 
 					case 34:
-
-						console.log(JSON.stringify(vaultrc, null, '\t'));
-
-						_context.prev = 35;
-						_context.next = 38;
+						_context.prev = 34;
+						_context.next = 37;
 						return _fsPromise2.default.readFile(VAULT_CONFIG_SECRETSPATH, 'utf8');
 
-					case 38:
+					case 37:
 						vaultsecrets = _context.sent;
-						_context.next = 44;
+						_context.next = 43;
 						break;
 
-					case 41:
-						_context.prev = 41;
-						_context.t4 = _context['catch'](35);
+					case 40:
+						_context.prev = 40;
+						_context.t4 = _context['catch'](34);
 
 						vaultsecrets = {};
 
-					case 44:
+					case 43:
 						if (!(typeof vaultsecrets === 'string')) {
-							_context.next = 52;
+							_context.next = 51;
 							break;
 						}
 
-						_context.prev = 45;
+						_context.prev = 44;
 
 						vaultsecrets = JSON.parse(vaultsecrets);
-						_context.next = 52;
+						_context.next = 51;
 						break;
 
-					case 49:
-						_context.prev = 49;
-						_context.t5 = _context['catch'](45);
+					case 48:
+						_context.prev = 48;
+						_context.t5 = _context['catch'](44);
 						throw new Error('vault-config: can\'t parse JSON in "' + VAULT_CONFIG_SECRETSPATH + '"\n' + _context.t5.stack);
 
-					case 52:
+					case 51:
 
 						// merge configs
-						configs = Object.keys(vaultrc).map(function (key) {
+						configs = (0, _keys2.default)(vaultrc).map(function (key) {
 							var envMatch = key.match(/^NODE_ENV=(.+)/),
 							    nodeEnv = process.env.NODE_ENV || '';
 
@@ -123,7 +132,7 @@ var loadConfigAsync = function () {
 						});
 
 						if (!configs.length) {
-							_context.next = 61;
+							_context.next = 60;
 							break;
 						}
 
@@ -133,21 +142,21 @@ var loadConfigAsync = function () {
 
 						// break out early, we have no matching vault rules
 
-						if (Object.keys(configs.vault).length) {
-							_context.next = 59;
+						if ((0, _keys2.default)(configs.vault).length) {
+							_context.next = 58;
 							break;
 						}
 
 						return _context.abrupt('return', configs.local);
 
-					case 59:
-						_context.next = 62;
+					case 58:
+						_context.next = 61;
 						break;
 
-					case 61:
+					case 60:
 						return _context.abrupt('return', {});
 
-					case 62:
+					case 61:
 						settings = {};
 
 						settings.VAULT_CONFIG_TOKEN = process.env.VAULT_CONFIG_TOKEN || vaultsecrets.VAULT_CONFIG_TOKEN;
@@ -162,21 +171,21 @@ var loadConfigAsync = function () {
 						settings.VAULT_CONFIG_SECRET_SHARES = vaultrc.VAULT_CONFIG_SECRET_SHARES || process.env.VAULT_CONFIG_SECRET_SHARES;
 
 						if (settings.VAULT_CONFIG_ENDPOINT) {
-							_context.next = 71;
+							_context.next = 70;
 							break;
 						}
 
 						throw new Error('vault-config: missing "VAULT_CONFIG_ENDPOINT"');
 
-					case 71:
+					case 70:
 						if (settings.VAULT_CONFIG_TOKEN) {
-							_context.next = 73;
+							_context.next = 72;
 							break;
 						}
 
 						throw new Error('vault-config: missing "VAULT_CONFIG_TOKEN"');
 
-					case 73:
+					case 72:
 						vault = (0, _vaultGet2.default)({
 							endpoint: settings.VAULT_CONFIG_ENDPOINT,
 							token: settings.VAULT_CONFIG_TOKEN,
@@ -185,31 +194,31 @@ var loadConfigAsync = function () {
 							rootPath: settings.VAULT_CONFIG_ROOTPATH,
 							secretShares: settings.VAULT_CONFIG_SECRET_SHARES
 						});
-						_context.prev = 74;
-						_context.next = 77;
+						_context.prev = 73;
+						_context.next = 76;
 						return vault.get(configs.vault);
 
-					case 77:
+					case 76:
 						configs.vault = _context.sent;
-						_context.next = 84;
+						_context.next = 83;
 						break;
 
-					case 80:
-						_context.prev = 80;
-						_context.t6 = _context['catch'](74);
+					case 79:
+						_context.prev = 79;
+						_context.t6 = _context['catch'](73);
 
 						_context.t6.message = 'vault-config: \n' + _context.t6.message;
 						throw _context.t6;
 
-					case 84:
+					case 83:
 						return _context.abrupt('return', (0, _deepExtend2.default)(configs.vault, configs.local));
 
-					case 85:
+					case 84:
 					case 'end':
 						return _context.stop();
 				}
 			}
-		}, _callee, this, [[1, 7], [10, 14], [17, 23], [26, 31], [35, 41], [45, 49], [74, 80]]);
+		}, _callee, this, [[1, 7], [10, 14], [17, 23], [26, 31], [34, 40], [44, 48], [73, 79]]);
 	}));
 
 	return function loadConfigAsync() {
@@ -238,8 +247,6 @@ var _deepExtend = require('deep-extend');
 var _deepExtend2 = _interopRequireDefault(_deepExtend);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { return step("next", value); }, function (err) { return step("throw", err); }); } } return step("next"); }); }; }
 
 var VAULT_CONFIG_RCPATH = process.env.VAULT_CONFIG_RCPATH || _appRootPath2.default + '/.vaultrc';
 var VAULT_CONFIG_SECRETSPATH = process.env.VAULT_CONFIG_SECRETSPATH || _appRootPath2.default + '/.vaultsecrets';
