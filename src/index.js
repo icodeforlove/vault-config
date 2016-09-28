@@ -1,3 +1,4 @@
+import VaultRaw from 'node-vault';
 import Vault from 'vault-get';
 import fs from 'fs-promise';
 import deasync from 'deasync';
@@ -6,6 +7,15 @@ import extend from 'deep-extend';
 
 const VAULT_CONFIG_RCPATH = process.env.VAULT_CONFIG_RCPATH || `${__rootdirname}/.vaultrc`;
 const VAULT_CONFIG_SECRETSPATH = process.env.VAULT_CONFIG_SECRETSPATH || `${__rootdirname}/.vaultsecrets`;
+
+async function renewToken (settings) {
+	let vault = VaultRaw({
+		apiVersion: 'v1',
+		endpoint: settings.VAULT_CONFIG_ENDPOINT,
+		token: settings.VAULT_CONFIG_TOKEN
+	});
+	await vault.tokenRenewSelf({increment: 2580000});
+}
 
 async function loadConfigAsync () {
 	let vaultrc,
@@ -105,6 +115,7 @@ async function loadConfigAsync () {
 	});
 
 	try {
+		await renewToken(settings);
 		configs.vault = await vault.get(configs.vault);
 	} catch (error) {
 		error.message = `vault-config: \n${error.message}`;
