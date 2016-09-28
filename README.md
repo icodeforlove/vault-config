@@ -105,6 +105,10 @@ VAULT_CONFIG_RCPATH=/path/to/.vaultrc
 VAULT_CONFIG_SECRETSPATH=/path/to/.vaultsecret
 ```
 
+## autorenew (token renewal)
+
+by default tokens will be autorenewed you can disable this by specifying ``VAULT_AUTORENEW_DISABLED=1`, and you can override the increment by doing `VAULT_AUTORENEW_INCREMENT=86400`
+
 ## localoverrides
 
 you can create a `.vaultlocalrc` next to your `.vaultrc` and it will merge into `.vaultrc` (a `.vaultlocalrc` is not intended to be commited)

@@ -8,13 +8,13 @@ import extend from 'deep-extend';
 const VAULT_CONFIG_RCPATH = process.env.VAULT_CONFIG_RCPATH || `${__rootdirname}/.vaultrc`;
 const VAULT_CONFIG_SECRETSPATH = process.env.VAULT_CONFIG_SECRETSPATH || `${__rootdirname}/.vaultsecrets`;
 
-async function renewToken (settings) {
+async function renewToken (settings, increment) {
 	let vault = VaultRaw({
 		apiVersion: 'v1',
 		endpoint: settings.VAULT_CONFIG_ENDPOINT,
 		token: settings.VAULT_CONFIG_TOKEN
 	});
-	await vault.tokenRenewSelf({increment: 2580000});
+	await vault.tokenRenewSelf({increment: increment});
 }
 
 async function loadConfigAsync () {
@@ -115,7 +115,10 @@ async function loadConfigAsync () {
 	});
 
 	try {
-		await renewToken(settings);
+		if (!process.env.VAULT_DISABLE_AUTORENEW) {
+			const increment = parseInt(process.env.VAULT_AUTORENEW_INCREMENT || 2580000, 10);
+			await renewToken(settings, increment);
+		}
 		configs.vault = await vault.get(configs.vault);
 	} catch (error) {
 		error.message = `vault-config: \n${error.message}`;
