@@ -4,7 +4,9 @@ import fs from 'fs-promise';
 import deasync from 'deasync';
 import __rootdirname from 'app-root-path';
 import extend from 'deep-extend';
+import Debug from 'debug';
 
+const debug = Debug('vault-config');
 const VAULT_CONFIG_RCPATH = process.env.VAULT_CONFIG_RCPATH || `${__rootdirname}/.vaultrc`;
 const VAULT_CONFIG_SECRETSPATH = process.env.VAULT_CONFIG_SECRETSPATH || `${__rootdirname}/.vaultsecrets`;
 
@@ -98,7 +100,8 @@ async function loadConfigAsync () {
 	settings.VAULT_CONFIG_SECRET_SHARES = vaultrc.VAULT_CONFIG_SECRET_SHARES || process.env.VAULT_CONFIG_SECRET_SHARES;
 
 	if (!settings.VAULT_CONFIG_ENDPOINT) {
-		throw new Error('vault-config: missing "VAULT_CONFIG_ENDPOINT"');
+		debug('missing "VAULT_CONFIG_ENDPOINT"');
+		return configs.local;
 	}
 
 	if (!settings.VAULT_CONFIG_TOKEN) {
