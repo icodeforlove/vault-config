@@ -1,6 +1,6 @@
 {
   "name": "vault-config",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "an insanely simple way to back your apps config by vault",
   "main": "dist/index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "deep-extend": "0.4.1",
     "fs-promise": "0.5.0",
     "node-vault": "0.5.4",
-    "vault-get": "0.0.9"
+    "vault-get": "0.0.10"
   },
   "devDependencies": {
     "babel": "^6.5.2",
