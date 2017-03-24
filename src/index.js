@@ -9,6 +9,7 @@ import Debug from 'debug';
 const debug = Debug('vault-config');
 const VAULT_CONFIG_RCPATH = process.env.VAULT_CONFIG_RCPATH || `${__rootdirname}/.vaultrc`;
 const VAULT_CONFIG_SECRETSPATH = process.env.VAULT_CONFIG_SECRETSPATH || `${__rootdirname}/.vaultsecrets`;
+const VAULT_GLOBAL = '__vault-config-shared__';
 
 async function renewToken (settings, increment) {
 	let vault = VaultRaw({
@@ -20,6 +21,10 @@ async function renewToken (settings, increment) {
 }
 
 async function loadConfigAsync () {
+	if (process[VAULT_GLOBAL]) {
+		return process[VAULT_GLOBAL];
+	}
+
 	let vaultrc,
 		vaultlocalrc,
 		vaultsecrets;
@@ -128,7 +133,7 @@ async function loadConfigAsync () {
 		throw error;
 	}
 
-	return extend(configs.vault, configs.local);
+	return process[VAULT_GLOBAL] = extend(configs.vault, configs.local);
 }
 
 export default deasync(callback => {
