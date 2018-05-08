@@ -138,9 +138,13 @@ async function loadConfigAsync () {
 }
 
 export default deasync(callback => {
-	promiseRetry(() => {
-		return loadConfigAsync();
-	}, {retries: 10}).then(
+	promiseRetry(async retry => {
+	    try {
+	    	return await loadConfigAsync();
+	    } catch (error) {
+	    	return retry();
+	    }
+	}, {maxTimeout: 1000, retries: 10}).then(
 		config => callback(null, config),
 		callback
 	).catch(callback);
