@@ -5,7 +5,7 @@ import deasync from 'deasync';
 import __rootdirname from 'app-root-path';
 import extend from 'deep-extend';
 import Debug from 'debug';
-import promiseRetry from 'promise-retry';
+import atmpt from 'atmpt';
 
 const debug = Debug('vault-config');
 const VAULT_CONFIG_RCPATH = process.env.VAULT_CONFIG_RCPATH || `${__rootdirname}/.vaultrc`;
@@ -138,13 +138,7 @@ async function loadConfigAsync () {
 }
 
 export default deasync(callback => {
-	promiseRetry(async retry => {
-	    try {
-	    	return await loadConfigAsync();
-	    } catch (error) {
-	    	return retry();
-	    }
-	}, {maxTimeout: 1000, retries: 10}).then(
+	atmpt(loadConfigAsync, {maxAttempts: 10, delay: attempt => attempt * 1000}).then(
 		config => callback(null, config),
 		callback
 	).catch(callback);
