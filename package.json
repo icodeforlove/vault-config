@@ -1,15 +1,17 @@
 {
-  "name": "vault-config",
-  "version": "0.0.23",
-  "description": "an insanely simple way to back your apps config by vault",
+  "name": "@auctionclub/vault-config-deasync",
+  "version": "0.1.0",
+  "description": "compatibility wrapper for .vaultrc files & GCP secrets based on @icodeforlove/vault-config",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "./node_modules/.bin/webpack --config webpack.config.js"
+    "test": "DEBUG=vault-config ./node_modules/.bin/babel-node .",
+    "build": "./node_modules/.bin/webpack --config webpack.config.js",
+    "clean": "./node_modules/.bin/babel-node ./clean-secret-files.js",
+    "prepublishOnly": "./node_modules/.bin/babel-node ./clean-secret-files.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/icodeforlove/vault-config.git"
+    "url": "https://github.com/arsnexus/vault-config-deasync.git"
   },
   "author": {
     "name": "Chad Scira",
@@ -17,15 +19,13 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@auctionclub/ac-secrets": "0.0.2",
     "app-root-path": "2.2.1",
     "atmpt": "1.0.3",
     "babel-runtime": "6.11.6",
     "deasync": "0.1.15",
     "debug": "4.1.1",
-    "deep-extend": "0.6.0",
-    "fs-promise": "2.0.3",
-    "node-vault": "0.9.0",
-    "vault-get": "0.0.12"
+    "deep-extend": "0.6.0"
   },
   "devDependencies": {
     "babel": "6.5.2",

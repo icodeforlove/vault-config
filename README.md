@@ -1,4 +1,33 @@
-# vault-config
+# ac-config-deasync
+
+Fork of [vault-config](https://github.com/icodeforlove/vault-config) to preserve existing configurations while fetching secrets from GCP instead of the Vault, using [@auctionclub/ac-secrets](https://github.com/arsnexus/ac-secrets) (see https://www.npmjs.com/package/@auctionclub/ac-secrets)
+
+```
+nvm use # ensures you're using 14.3.0 (needed for deasync)
+
+# copy .npmrc
+npm install
+
+# copy .env, .vaultrc and secrets.json
+npm test
+```
+
+## Before running
+
+You will need to copy the following files in order to be able to run `npm test`:
+
+- `.npmrc`
+  - to be able to `npm install`
+- `.vaultrc`
+  - the scrapers' cnofig file we want to keep compatibility for (`.vaultsecrets` not needed anymore)
+- `.env` containing `GOOGLE_APPLICATION_CREDENTIALS=secrets.json`
+- `secrets.json` containg the GCP secrets
+
+---
+
+---
+
+## Original README for vault-config
 
 an insanely simple way to back your apps config by vault, and make it committable
 
@@ -67,7 +96,7 @@ if everything is correct you should be able to do the following
 
 ```javascript
 // blocks on first module load if vault keys are requested
-import config from 'vault-config';
+import config from "vault-config";
 
 console.log(config);
 ```

@@ -1,3 +1,7 @@
 node_modules
 .vault*
 _*
+.DS_Store
+.env
+.npmrc
+secrets.json
