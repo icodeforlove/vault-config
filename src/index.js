@@ -1,70 +1,54 @@
-import VaultRaw from 'node-vault';
-import Vault from 'vault-get';
-import fs from 'fs-promise';
+// import VaultRaw from 'node-vault';
+// import Vault from 'vault-get';
+import fs from 'fs';
 import deasync from 'deasync';
 import __rootdirname from 'app-root-path';
 import extend from 'deep-extend';
 import Debug from 'debug';
 import atmpt from 'atmpt';
+const getSecrets = require('@auctionclub/ac-secrets');
+
 
 const debug = Debug('vault-config');
 const VAULT_CONFIG_RCPATH = process.env.VAULT_CONFIG_RCPATH || `${__rootdirname}/.vaultrc`;
-const VAULT_CONFIG_SECRETSPATH = process.env.VAULT_CONFIG_SECRETSPATH || `${__rootdirname}/.vaultsecrets`;
+// const VAULT_CONFIG_SECRETSPATH = process.env.VAULT_CONFIG_SECRETSPATH || `${__rootdirname}/.vaultsecrets`;
 const VAULT_GLOBAL = '__vault-config-shared__';
 
-async function renewToken (settings, increment) {
-	let vault = VaultRaw({
-		apiVersion: 'v1',
-		endpoint: settings.VAULT_CONFIG_ENDPOINT,
-		token: settings.VAULT_CONFIG_TOKEN
-	});
-	await vault.tokenRenewSelf({increment: increment});
-}
+// make promise version of fs.readFile() + JSON.parse
+async function readJsonAsync (filename, doReject = true) {
+    return new Promise((resolve, reject) => {
+        fs.readFile(filename, (err, data) => {
+            if (err) {
+                if (doReject) {
+					reject(err);
+				} else {
+					resolve(null);
+				}
+			}
+            else {
+                resolve(JSON.parse(data));
+			}
+        });
+    });
+};
 
 async function loadConfigAsync () {
 	if (process[VAULT_GLOBAL]) {
 		return process[VAULT_GLOBAL];
 	}
 
-	let vaultrc,
-		vaultlocalrc,
-		vaultsecrets;
+	let [ vaultrc, vaultlocalrc ] = await Promise.all([
+		readJsonAsync(VAULT_CONFIG_RCPATH),
+		readJsonAsync(`${__rootdirname}/.vaultlocalrc`, false),
+	])
+	.catch(error => {
+			throw new Error(`vault-config: invalid config/secrets files\n${error.stack}`);
 
-	try {
-		vaultrc = await fs.readFile(VAULT_CONFIG_RCPATH, 'utf8');
-	} catch (error) {
-		throw new Error(`vault-config: can't find "${VAULT_CONFIG_RCPATH}"\n${error.stack}`);
-	}
-	try {
-		vaultrc = JSON.parse(vaultrc);
-	} catch (error) {
-		throw new Error(`vault-config: can't parse JSON in "${VAULT_CONFIG_RCPATH}"\n${error.stack}`);
-	}
+	});
 
-	try {
-		vaultlocalrc = await fs.readFile(`${__rootdirname}/.vaultlocalrc`, 'utf8');
-	} catch (error) {}
-	if (vaultlocalrc) {
-		try {
-			vaultlocalrc = JSON.parse(vaultlocalrc);
-			vaultrc = extend(vaultrc, vaultlocalrc);
-		} catch (error) {
-			throw new Error(`vault-config: can't parse JSON in "${__rootdirname}/.vaultlocalrc"\n${error.stack}`);
-		}
-	}
 
-	try {
-		vaultsecrets = await fs.readFile(VAULT_CONFIG_SECRETSPATH, 'utf8');
-	} catch (error) {
-		vaultsecrets = {};
-	}
-	if (typeof vaultsecrets === 'string') {
-		try {
-			vaultsecrets = JSON.parse(vaultsecrets);
-		} catch (error) {
-			throw new Error(`vault-config: can't parse JSON in "${VAULT_CONFIG_SECRETSPATH}"\n${error.stack}`);
-		}
-	}
+	vaultrc = extend(vaultrc, vaultlocalrc);
+
 
 	// merge configs
 	let configs = Object.keys(vaultrc)
@@ -93,52 +77,24 @@ async function loadConfigAsync () {
 		return {};
 	}
 
-	let settings = {};
-	settings.VAULT_CONFIG_TOKEN = process.env.VAULT_CONFIG_TOKEN || vaultsecrets.VAULT_CONFIG_TOKEN;
-	settings.VAULT_CONFIG_KEY = process.env.VAULT_CONFIG_KEY || vaultsecrets.VAULT_CONFIG_KEY;
-	if (process.env.VAULT_CONFIG_KEYS) {
-		settings.VAULT_CONFIG_KEYS = process.env.VAULT_CONFIG_KEYS.split(',');
-	} else {
-		settings.VAULT_CONFIG_KEYS = vaultsecrets.VAULT_CONFIG_KEYS;
-	}
-	settings.VAULT_CONFIG_ENDPOINT = vaultrc.VAULT_CONFIG_ENDPOINT || process.env.VAULT_CONFIG_ENDPOINT;
-	settings.VAULT_CONFIG_ROOTPATH = vaultrc.VAULT_CONFIG_ROOTPATH || process.env.VAULT_CONFIG_ROOTPATH;
-	settings.VAULT_CONFIG_SECRET_SHARES = vaultrc.VAULT_CONFIG_SECRET_SHARES || process.env.VAULT_CONFIG_SECRET_SHARES;
 
-	if (!settings.VAULT_CONFIG_ENDPOINT) {
-		debug('missing "VAULT_CONFIG_ENDPOINT"');
-		return configs.local;
-	}
-
-	if (!settings.VAULT_CONFIG_TOKEN) {
-		throw new Error('vault-config: missing "VAULT_CONFIG_TOKEN"');
-	}
-
-	let vault = Vault({
-		endpoint: settings.VAULT_CONFIG_ENDPOINT,
-		token: settings.VAULT_CONFIG_TOKEN,
-		keys: settings.VAULT_CONFIG_KEYS,
-		key: settings.VAULT_CONFIG_KEY,
-		rootPath: settings.VAULT_CONFIG_ROOTPATH,
-		secretShares: settings.VAULT_CONFIG_SECRET_SHARES
-	});
-
+	debug('secrets: loading');
+	
 	try {
-		if (!process.env.VAULT_DISABLE_AUTORENEW) {
-			const increment = parseInt(process.env.VAULT_AUTORENEW_INCREMENT || 2580000, 10);
-			await renewToken(settings, increment);
-		}
-		configs.vault = await vault.get(configs.vault);
+		const secrets = await getSecrets();
+		configs.vault = secrets;
+	
+		debug('secrets: loaded ' + Object.keys(secrets).length);
+
 	} catch (error) {
-		error.message = `vault-config: \n${error.message}`;
-		throw error;
+		throw new Error(`vault-config: cannot load secrets from GCP\n${error.stack}`);
 	}
 
 	return process[VAULT_GLOBAL] = extend(configs.vault, configs.local);
 }
 
 export default deasync(callback => {
-	atmpt(loadConfigAsync, {maxAttempts: 10, delay: attempt => attempt * 1000}).then(
+	atmpt(loadConfigAsync, {maxAttempts: 3, delay: attempt => attempt * 1000}).then(
 		config => callback(null, config),
 		callback
 	).catch(callback);
